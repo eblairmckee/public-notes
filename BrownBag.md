@@ -40,6 +40,7 @@
   - [Deeply Nested Styles](#deeply-nested-styles)
     - [Example](#example-1)
     - [Example 2](#example-2)
+- [Passing Props](#passing-props)
   - [Theme-ing](#theme-ing)
 - [Storybook](#storybook)
 - [Testing](#testing)
@@ -109,7 +110,7 @@ Styled components render as the HTML element you pass in with hashed class(es)
 so this
 ```javascript
 const Title = styled.h1`
-    color: peru;
+    color: palevioletred;
 `;
 ```
 
@@ -117,7 +118,7 @@ will compile as this
 ```html
 <style>
     .h39edk {
-        color: peru;
+        color: palevioletred;
     }
 </style>
 
@@ -168,32 +169,30 @@ const styledComponent = styled(MyComponent)`
 You can style another styled component similar to the `@extend` method in sass and stylus
 
 ```javascript
-const Button = styled(Button)`
+const Button = styled.button`
     border: 1px solid;
     border-color: blue;
     color: blue;
 `;
 
-const Component = ({ props, className }) => {
-    return <Button className={className}>I'm a button</Button>
-}
-```
-
-Now you can "extend" `Button` styles in a new component
-
-```javascript
 const DangerButton = styled(Button) `
     border-color: red;
     color: red;
 `;
+
+const Component = ({ className }) => {
+    return <DangerButton className={className}>I'm a dangerous button, rawr!</DangerButton>
+}
 ```
+
+`DangerButton` "extends" `Button` styles in a new component
 
 make sure you pass in `className` as a prop otherwise styled component won't know what node to attach the styles to
 
-or use the `React.HTMLAttributes<HTMLAnchorElement>` interface and spread in `{...passThrough}` as a `prop` which will add the type and `className`
+or use the appropriate interface like `React.HTMLAttributes<HTMLButtonElement>` and spread in `{...passThrough}` as a `prop` which will add the type and `className`
 
 ```javascript
-interface Props extends React.HTMLAttributes<HTMLAnchorElement> {};
+interface Props extends React.HTMLAttributes<HTMLButtonElement> {};
 
 const Component: React.FC<Props> = ({ props, ...passThrough }) => {
     return <Button {...passThrough}>I'm a button</Button>
@@ -223,10 +222,23 @@ If you have a one-off that only going to happen once.... you can `{{inline}}` it
 ```
 
 ## Change elements dynamically
-Extend a styled component and change the HTML element it renders as
+Have a styled component and want to change the HTML element it renders as? Use `as`.
 
 ```javascript
-<Button as="a">I'm a link now!</Button>
+const Button = styled.button`
+    border: 1px solid;
+    border-color: blue;
+    color: blue;
+`;
+
+const Component = () => {
+    return (
+        <>
+            <Button>I'm a button</Button>
+            <Button as="a">I'm a link now!</Button>
+        </Button>
+    )
+}
 ```
 
 ## Global Styles
@@ -271,7 +283,7 @@ use `props` for any one-off styles, subtle variations, state based changes
 ### Exception!
 although if you're only going to be using the one-off style once, just extend the component and add your styles.
 
-AKA: if you feel compelled to add a `className` to a styled component.... you probably don't have to.
+**AKA:** if you feel compelled to add a `className` to a styled component.... you probably don't have to.
 this is a one-off and it should be replaced with `props`
 
 ### for example
@@ -325,13 +337,16 @@ const Button = styled.button`
         (props.type === 'primary' && 'blue') ||
         (props.type === 'danger' && 'red') ||
         (props.type === 'warning' && 'yellow') ||
+        'transparent' //default value
     }
 `;
 
 <Button type="primary">
 ```
 
-or this
+prettier, right?
+
+or if you want to get fancy, this:
 ```javascript
 const Container = styled.div`
   margin-top: ${props => props.marginTop};
@@ -339,11 +354,10 @@ const Container = styled.div`
 
 <Container marginTop="2em" />
 ```
-
-Or go with conditional blocks
+although, anyone could input anything as the value which can cause some errors. In that case, you'll want to create an interface for those prop values.
 
 ## State based props
-if you have a big block of styles (more than 2 styles is a good rule of thumb) that will change based on a prop... encapsulate those styles
+if you have a big block of styles (more than 2 styles is a good rule of thumb) that will change based on a prop... encapsulate those styles and only activate them when the prop is true
 
 ```javascript
 const Button = styled.button`
@@ -408,7 +422,7 @@ you can also use props and interpolations inside your mixins 😱
 You can write your own mixins! 🙃
 
 ```javascript
-const boxShadowMixinFunc = (top, left, blur, color, inset = false) => {
+const boxShadowMixinFunc = (top = 0, left = 0, blur = 0, color, inset = false) => {
  return `box-shadow: ${inset ? 'inset' : ''} ${top}px ${left}px ${blur}px ${color};`;
 }
 
@@ -549,10 +563,55 @@ const FilterAccordionButton = styled(AccordionButton)`
 
 This preserves the original, agnostic component and allows it to continue to be reused in other views.
 
-## Theme-ing
-styled components come with their own `<ThemeProvider>` that uses Context API
-🚫 so no more prop drilling
+# Passing Props
+We know how props work, but what happens if you change the prop of the parent and want it to propogate down to its children?
 
+There are two ways:
+1. you can create conditional overrides in the parent for each child (preferred method)
+2. you can prop drill
+   a. or use context API (next topic)
+
+For [example](https://codesandbox.io/s/practical-brook-gsvly):
+```javascript
+ const Button = styled.button`
+    padding: 5px 20px;
+    font-size: 2em;
+    background: palevioletred;
+    color: ${props => (props.darkMode ? "#eee" : "#333")}; //this won't work
+ `;
+
+ const Container = styled.div`
+    display: grid;
+    place-content: center center;
+    height: 100vh;
+    background: ${props => (props.darkMode ? "#333" : "white")};
+    ${Button} {
+        //but this does
+        color: ${props => (props.darkMode ? "papayawhip" : "#333")};
+    }
+ `;
+
+ export default function App() {
+    const [darkMode, setDarkMode] = useState(false);
+    const toggleDarkMode = () => {
+        setDarkMode(!darkMode);
+    };
+    return (
+        <Container darkMode={darkMode}>
+        <Button onClick={toggleDarkMode}>Hi, I'm a button!</Button>
+        </Container>
+    );
+ }
+```
+
+## Theme-ing
+styled components come with their own `<ThemeProvider>` that uses the Context API.
+
+Context lets you wrap your app or component in a `<Provider>` which will pass down `props` to all consuming components (without having to pass props manually through each component in the heirarchy).
+
+🚫 so no more prop drilling!
+
+here's an example:
 ```javascript
 const theme = {
     primaryColor: '#bada55';
