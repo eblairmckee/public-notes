@@ -49,6 +49,9 @@
 - [What does this mean for Chop Shop?](#what-does-this-mean-for-chop-shop)
   - [Architecture/Organization](#architectureorganization)
   - [Angular Migration](#angular-migration)
+  - [Stylus Migration](#stylus-migration)
+    - [Modifiers](#modifiers)
+    - [Contextual modifiers](#contextual-modifiers)
   - [Reusable/Shared Components in Connect Components](#reusableshared-components-in-connect-components)
     - [Known Issues](#known-issues)
   - [Constants](#constants)
@@ -687,6 +690,49 @@ Since the migration from angular to react is still in progress, sometimes you ma
 
 Although, I've been able to avoid this thus far by setting the default styles to whatever I want in the angular view, and then dropping in a prop to the react rendered components that override it.
 
+## Stylus Migration
+We want to break the habit of depending on classes for styling and instead rely solely on the functionality of styled components, meaning props and everything else we talked about already.
+
+The first step is to migrate the smallest components and work our way up. Ideally, you want to create a generic version of the component first, and then use props, mixins, prop-based code-blocks, and other techniques to add additional context and state based styles and modifiers.
+
+### Modifiers
+Anything that isn't contextual
+
+write a snippet like:
+```javascript
+export const outerContainer = `
+    max-width: 1224px;
+    margin: auto;
+    padding-left: 0;
+    padding-right: 0;
+`
+```
+
+and use it like:
+```javascript
+import { outerContainer } from './atomic-styles';
+
+const Section = styled.div`
+    ${outerContainer};
+    //other styles
+`;
+```
+
+this preserves the cascade and is basically the same as adding the `.outer-container` class to the component
+
+`outer-container` is a bad example, because ideally it should be its own component... but that's a huge refactor so it should only be used for transition.
+
+### Contextual modifiers
+Contextual styles should not use snippets. Instead, you should extend a base version of the component and then add on your context/view specific styles.
+
+```javascript
+import { BaseButton } from './styled-components';
+
+const ResultButton = styled(BaseButton)`
+    //contextual styles
+`;
+```
+
 ## Reusable/Shared Components in Connect Components
 As mentioned earlier, we want to make shareable components. If you build a component that can be shared across multiple views, throughout chopshop UI we suggest moving it to connect-components and import it as an npm package.
 
@@ -720,5 +766,6 @@ const MyComponent = styled.span`
 ```
 
 # Further reading
-[7 must know features](https://blog.cloudboost.io/getting-the-most-out-of-styled-components-7-must-know-features-acba3cc15b5)
-[10 useful tips](https://medium.com/@pitipatdop/10-useful-tips-for-styled-components-b7710b021e6a)
+- migration [cheatsheet](https://jsramblings.com/2017/10/29/migrating-to-styled-components-cheatsheet.html)
+- 7 must know [features](https://blog.cloudboost.io/getting-the-most-out-of-styled-components-7-must-know-features-acba3cc15b5)
+- 10 useful [tips](https://medium.com/@pitipatdop/10-useful-tips-for-styled-components-b7710b021e6a)
