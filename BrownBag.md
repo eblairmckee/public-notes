@@ -23,22 +23,23 @@
   - [Change elements dynamically](#change-elements-dynamically)
   - [Global Styles](#global-styles)
 - [Props](#props)
-  - [Example](#example)
+  - [Basic Example](#basic-example)
   - [Usage](#usage)
     - [Exception!](#exception)
     - [for example](#for-example)
     - [a more complex example](#a-more-complex-example)
     - [a little less complex](#a-little-less-complex)
   - [State based props](#state-based-props)
+  - [Dynamic props](#dynamic-props)
   - [Caveats](#caveats)
-- [Mixins](#mixins)
-  - [Mixin Functions](#mixin-functions)
+- [Partials/Blocks](#partialsblocks)
+- [Mixin Functions](#mixin-functions)
 - [Best Practices](#best-practices)
   - [Declare Outside Render](#declare-outside-render)
   - [Combining with Stylesheets](#combining-with-stylesheets)
     - [For example](#for-example)
   - [Deeply Nested Styles](#deeply-nested-styles)
-    - [Example](#example-1)
+    - [Example](#example)
     - [Example 2](#example-2)
 - [Passing Props](#passing-props)
   - [Theme-ing](#theme-ing)
@@ -50,8 +51,11 @@
   - [Architecture/Organization](#architectureorganization)
   - [Angular Migration](#angular-migration)
   - [Stylus Migration](#stylus-migration)
-    - [Modifiers](#modifiers)
+    - [Classes](#classes)
+    - [A more complicated example](#a-more-complicated-example)
     - [Contextual modifiers](#contextual-modifiers)
+    - [Variants](#variants)
+    - [Mixins](#mixins)
   - [Reusable/Shared Components in Connect Components](#reusableshared-components-in-connect-components)
     - [Known Issues](#known-issues)
   - [Constants](#constants)
@@ -143,8 +147,9 @@ the [magic](https://mxstbr.blog/2016/11/styled-components-magic-explained/) behi
 - styles are scoped to each component
   - so no more bloated stylesheets
 - don't have to deal with class names, specificity issues, bad naming conventions, BEM
-- (almost) all the functionality of preprocessors
+- all the functionality of preprocessors
   - vendor prefixes
+  - mixins and more
 
 ## disadvantages
 - 🤷‍♀️
@@ -262,12 +267,11 @@ and then import the `createGlobalStyle` component into the root of the app as a 
 # Props
 you can pass `props` into styled components and render different styles.
 
-`props` are booleans and if used in a component, will activate any associated styles.
+- `props` are booleans and if used in a component, will activate any associated styles.
+- `props` can be used for multiple styles in a single component.
+- you can have multiple `props` in a component with conditional styling using `if ... else`
 
-`props` can be used for multiple styles in a single component.
-doesn't have to be just a single prop for each style... can have multiple options with `if ... else`
-
-## Example
+## Basic Example
 ```javascript
 const Container = styled.div`
     max-width: ${props => props.fluid ? 'auto' : '1224px'};
@@ -283,11 +287,11 @@ const MyContainer = () => {
 ## Usage
 use `props` for any one-off styles, subtle variations, state based changes
 
-### Exception!
-although if you're only going to be using the one-off style once, just extend the component and add your styles.
-
-**AKA:** if you feel compelled to add a `className` to a styled component.... you probably don't have to.
+**In other words:** if you ever feel compelled to add a `className` to a styled component.... you don't have to.
 this is a one-off and it should be replaced with `props`
+
+### Exception!
+although if you're only going to be using the one-off style once, just extend the component and add your styles. props are intended for multiple uses.
 
 ### for example
 this
@@ -312,7 +316,7 @@ const Button = styled.button`
 ```
 
 ### a more complex example
-`props` can be more than simple booleans.... can interpolate if/then logic
+`props` can be more than simple booleans.... can interpolate `if... then` logic
 
 ```javascript
 const Button = styled.button`
@@ -349,18 +353,10 @@ const Button = styled.button`
 
 prettier, right?
 
-or if you want to get fancy, this:
-```javascript
-const Container = styled.div`
-  margin-top: ${props => props.marginTop};
-`;
-
-<Container marginTop="2em" />
-```
-although, anyone could input anything as the value which can cause some errors. In that case, you'll want to create an interface for those prop values.
-
 ## State based props
 if you have a big block of styles (more than 2 styles is a good rule of thumb) that will change based on a prop... encapsulate those styles and only activate them when the prop is true
+
+this is the preferred method over `if... then` logic
 
 ```javascript
 const Button = styled.button`
@@ -386,11 +382,24 @@ you can store this prop in state and if `this.state.darkMode` is true, it will a
 <Button darkMode={this.state.darkMode} />
 ```
 
+## Dynamic props
+this is a great alternative to one-off classes for margins and padding
+
+```javascript
+const Container = styled.div`
+  margin-top: ${props => props.marginTop};
+`;
+
+<Container marginTop="2em" />
+```
+
+although, anyone could input anything as the value which can cause some errors. In that case, you'll want to create an interface for those prop values.
+
 ## Caveats
 Don't use `props` or inline styles on children to determine spacing: margins or padding. That should be the responsibility of the parent.
 
-# Mixins
-just like sass and stylus, you can reuse fragments.
+# Partials/Blocks
+just like sass `%partials` and stylus blocks, you can reuse fragments.
 just declare them as a regular constant
 
 either as a string
@@ -419,9 +428,9 @@ const Overlay = styled.div`
 `;
 ```
 
-you can also use props and interpolations inside your mixins 😱
+you can also use props and interpolations inside your partials 😱
 
-## Mixin Functions
+# Mixin Functions
 You can write your own mixins! 🙃
 
 ```javascript
@@ -431,6 +440,25 @@ const boxShadowMixinFunc = (top = 0, left = 0, blur = 0, color, inset = false) =
 
 const StyledComp = styled.div`
   ${boxShadowMixinFunc(0, 0, 4, 'rgba(0, 0, 0, 0.5)')}
+`;
+```
+
+or something like this (which was adapted by Yi from our stylus mixins)
+```javascript
+import * as styleConsts from './constants';
+
+export const phoneOnly = cssRulesStringBlock => `
+    @media (max-width: ${styleConsts.$phoneWidthMax}) {
+        ${cssRulesStringBlock}
+    }
+`;
+
+const Button = styled.button`
+    display: block;
+    ${phoneOnly(`
+        text-transform: uppercase;
+        width: 100%;
+    `)};
 `;
 ```
 
@@ -478,6 +506,8 @@ or
 ```
 
 but please don't do this? 🙏🏼 unless you absolutely have to
+
+part of the allure of styled components is that we don't have to chase down the rendered component to see what styles were added... everything is encapsulated in the styled component declaration.
 
 ## Deeply Nested Styles
 remember this $*#@?
@@ -531,14 +561,21 @@ search results `result` has many nested children. how would you refactor this in
 
 what i would do...
 
+since result is used in other views, create a generic `<Result>` that we can extend in the search results view
+
 ```javascript
-const Result = styled.div`
+export const Result = styled.div`
+    //there are actually no common styles so this was a bad example.. but we're going to show it anyway
+    display: block;
+`;
+
+export const SearchResult = styled(Result)`
     border-bottom: 1px solid $hrColor;
-    padding: ${props => {
-        if(props.noPaddingBottom) => '30px 0 0 0'
-        else if(props.programResult) => '30px 25% 30px 0'
+    padding: ${props =>
+        (props.noPadding && '30px 0 0 0')
+        (props.programResult && '30px 25% 30px 0')
         return '30px 0'
-    }};
+    };
     position: relative;
     ${({programResult}) =>
         programResult && `
@@ -601,7 +638,7 @@ For [example](https://codesandbox.io/s/practical-brook-gsvly):
     };
     return (
         <Container darkMode={darkMode}>
-        <Button onClick={toggleDarkMode}>Hi, I'm a button!</Button>
+            <Button onClick={toggleDarkMode}>Hi, I'm a button!</Button>
         </Container>
     );
  }
@@ -638,6 +675,8 @@ Ideally this should replace having to import theme constants files each time we 
 Use Storybook [Addon Knobs](https://www.npmjs.com/package/@storybook/addon-knobs) to illustrate how the different props you can pass in change the UI, rather than creating a different story for each variation.
 
 See [proof of concept](https://github.com/AudaxHealthInc/connect-components/blob/master/src/Layout/Containers/Containers.stories.tsx) in connect components
+
+[Live example](http://localhost:9005/?path=/story/containers--flex-container) if you have connect-components running locally
 
 Currently storybook is not being used (although installed) in chopshop UI... we need to get in the habit of adding reusable components to storybook. A good rule of thumb, if a component can be used across views, it should be in storybook. If the UI can be altered by `props` then add knobs.
 
@@ -682,7 +721,8 @@ describe('<Container />', () => {
 This is still up for debate and seems to depend on each project/scope/etc. but current methodology is:
 - If it's specific to a component... declare styled components within the component file
 - If it can be reused across multiple components within the same project folder or is contextual to a project... store it in a common file within the project folder
-- If it can be reused throughout chopshop UI, put it in `app/scripts/components/react/styled-components` folder in chopshop UI
+- If it can be reused throughout chopshop UI, put it in `app/scripts/components/react/shared/styled-components/` folder in chopshop UI
+  - same for mixins and shared style utilities
   - eventually we want to store these in the [connect components](https://github.com/AudaxHealthInc/connect-components) repo
 
 ## Angular Migration
@@ -693,12 +733,10 @@ Although, I've been able to avoid this thus far by setting the default styles to
 ## Stylus Migration
 We want to break the habit of depending on classes for styling and instead rely solely on the functionality of styled components, meaning props and everything else we talked about already.
 
-The first step is to migrate the smallest components and work our way up. Ideally, you want to create a generic version of the component first, and then use props, mixins, prop-based code-blocks, and other techniques to add additional context and state based styles and modifiers.
+The first step is to migrate the smallest components and mixins and work our way up. Ideally, you want to create a generic/base version of the component first, and then use props, mixins, prop-based code-blocks, and other techniques to add additional context and state based styles and modifiers.
 
-### Modifiers
-Anything that isn't contextual
-
-write a snippet like:
+### Classes
+replace classes with blocks/chunks/partials:
 ```javascript
 export const outerContainer = `
     max-width: 1224px;
@@ -708,9 +746,11 @@ export const outerContainer = `
 `
 ```
 
+and store it in the common file `app/scripts/components/react/shared/styled-components/`
+
 and use it like:
 ```javascript
-import { outerContainer } from './atomic-styles';
+import { outerContainer } from '../path/to/file.ts';
 
 const Section = styled.div`
     ${outerContainer};
@@ -718,9 +758,76 @@ const Section = styled.div`
 `;
 ```
 
-this preserves the cascade and is basically the same as adding the `.outer-container` class to the component
+this preserves the cascade and is basically the same as adding the `.outer-container` class to the component, but this way all the styles are declared in the styled component declaration and not when you render it.
 
 `outer-container` is a bad example, because ideally it should be its own component... but that's a huge refactor so it should only be used for transition.
+
+### A more complicated example
+[live version](https://codesandbox.io/s/divine-bird-di39p)
+
+`CostBandButton` has:
+- base styles
+- conditional logic depending on props passed down from the parent
+- renders as a different element, with differet classes depending on the view
+- and a slew of `classNames`
+
+Here's what it looks like now
+```javascript
+<a className={`section action-btn ${props.buttonValue === 'costDetailsButton' ? 'negative ' : ''} costsButton`}>copy</a>
+```
+
+First, we'll create base styles, taken from the `costsButton` class and store it in a common file. These styles will be reused in other components later, so instead of just declaring a styled component with these styles, let's turn it into a reusable chunk.
+
+Think of this like a sass `%partial`... it's not a component, just a block of styles we want to reuse.
+```javascript
+export const costBandBaseStyles = `
+    padding: 12px 20px;
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+`
+```
+later, we'll import it into our styled component declaration
+
+Since this is a contextual variant of `ActionBtn` we extend it. (`ActionBtn` hasn't been converted yet, but let's pretend we did)
+
+and then add modifiers (our replacement for `classNames`) to the common file
+
+```javascript
+export const section = `
+    &:last-child {
+        @media(min-width: ${phoneWidthMax}) {
+            margin-bottom: 0;
+        }
+    }
+`
+```
+
+this is what it looks like now
+```javascript
+import { costBandBaseStyles, section } from "../common";
+import { ActionBtn } from "./ActionButton";
+
+const CostBandButtonStyles = styled(ActionBtn)`
+    ${costBandBaseStyles};
+    ${section};
+`;
+```
+
+and lastly, conditionals for props passed down from the parent.
+
+since `.negative` is actually a child class of `ActionBtn` (which we've already converted to be a prop) we can drop it in as a conditional prop when we render it
+
+```javascript
+export const CostBandButton = props => {
+  return (
+    <CostBandButtonStyles negative={props.ButtonValue === "costsDetailsButton"}>
+      {props.children}
+    </CostBandButtonStyles>
+  );
+};
+```
 
 ### Contextual modifiers
 Contextual styles should not use snippets. Instead, you should extend a base version of the component and then add on your context/view specific styles.
@@ -732,6 +839,48 @@ const ResultButton = styled(BaseButton)`
     //contextual styles
 `;
 ```
+
+### Variants
+Not contextual, not one-off styles... these are variations on a common component, eg: a button with variations like: primary, secondary, inverse... etc.
+
+Variations should be properties you can drop into a base component and render the variant styles like this:
+```javascript
+export const ActionBtn = styled.button<StyledProps>`
+  background: blue;
+  border-color: blue;
+  color: white;
+  transition: ease 0.4s;
+
+  &:hover {
+    background: darkblue;
+    border-color: darkblue;
+    color: #eee;
+  }
+
+  ${({ negative }) =>
+    negative &&
+    `
+      background: transparent;
+      border-color: blue;
+      color: blue;
+
+      &:hover {
+          background: rgba(0,0,0,0.1);
+      }
+
+    `}
+`;
+
+//render as
+const App = () => {
+    return <ActionBtn negative>
+}
+```
+
+### Mixins
+Yi already got a head start on the [responsive mixins](https://github.com/AudaxHealthInc/chopshop-ui/pull/5528/files/5fb3fea01c0d664b8ffabc051ee8bd5371c48bb6#diff-05b2ec5c594b7605920d11689efcc764R41)
+
+just turn them into regular functions and store them in the `react/shared/styled-components` folder
 
 ## Reusable/Shared Components in Connect Components
 As mentioned earlier, we want to make shareable components. If you build a component that can be shared across multiple views, throughout chopshop UI we suggest moving it to connect-components and import it as an npm package.
@@ -769,3 +918,4 @@ const MyComponent = styled.span`
 - migration [cheatsheet](https://jsramblings.com/2017/10/29/migrating-to-styled-components-cheatsheet.html)
 - 7 must know [features](https://blog.cloudboost.io/getting-the-most-out-of-styled-components-7-must-know-features-acba3cc15b5)
 - 10 useful [tips](https://medium.com/@pitipatdop/10-useful-tips-for-styled-components-b7710b021e6a)
+- storybook [knobs](https://storybooks-official.netlify.com/?path=/story/addons-knobs-withknobs--tweaks-static-values)
