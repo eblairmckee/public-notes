@@ -37,7 +37,7 @@
 - [Best Practices](#best-practices)
   - [Declare Outside Render](#declare-outside-render)
   - [Combining with Stylesheets](#combining-with-stylesheets)
-    - [For example](#for-example)
+    - [For example](#for-example-1)
   - [Deeply Nested Styles](#deeply-nested-styles)
     - [Example](#example)
     - [Example 2](#example-2)
@@ -58,10 +58,14 @@
     - [Mixins](#mixins)
   - [Reusable/Shared Components in Connect Components](#reusableshared-components-in-connect-components)
     - [Known Issues](#known-issues)
+      - [Connect components](#connect-components-1)
+      - [Mixins](#mixins-1)
   - [Constants](#constants)
 - [Further reading](#further-reading)
 
 # Intro
+[Styled components](https://www.styled-components.com/)💅🏼 is a react library that allows you to scope styles to components using CSS in JS.
+
 Last year we decided to use styled components in chopshop for all new components, and refactor old ones still using stylus. The idea was:
 - to encapsulate css class names and styles to a component that will never conflict or collide with any other components
 - and interpolate common styles across multiple components without breaking encapsulation
@@ -886,6 +890,7 @@ just turn them into regular functions and store them in the `react/shared/styled
 As mentioned earlier, we want to make shareable components. If you build a component that can be shared across multiple views, throughout chopshop UI we suggest moving it to connect-components and import it as an npm package.
 
 ### Known Issues
+#### Connect components
 Existing connect-components use styled components with classes. This poses a few issues with extending, eg you still have to look up class definitions and do weird overrides like this:
 
 ```javascript
@@ -902,6 +907,22 @@ Ideally, we want to refactor these components to be styled components with passe
 Currently there is an [ADR in connect components](https://github.com/AudaxHealthInc/connect-components/blob/master/adrs/0004-reusable-styled-components.md) that advocates for using styled components with passed in props instead of one-off styles.
 
 Should this part of the angular -> react conversion efforts?
+
+#### Mixins
+Chopshop UI stylelint alphabetizes CSS props and for some reason thinks mixins need to alphabetized as well as `mixin`. There are two options... if possible, turn the mixin into a styled component and extend it. Unless you are using more than one... then use stylelint ignore
+
+```javascript
+const ViewAllModal = styled(Modal)`
+    /* stylelint-disable */
+    ${ButtonLink}
+    ${Link}
+    font-size: 0.75em;
+    font-weight: ${styleConsts.$fwMedium};
+    padding-left: 5px;
+    text-transform: uppercase;
+    /* stylelint-enable */
+`;
+```
 
 ## Constants
 We're currently using stylus constants for colors, spacing, etc. Naming conventions are rudimentary at best. Very little consistency.
