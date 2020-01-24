@@ -513,6 +513,19 @@ but please don't do this? 🙏🏼 unless you absolutely have to
 
 part of the allure of styled components is that we don't have to chase down the rendered component to see what styles were added... everything is encapsulated in the styled component declaration.
 
+instead... wrap your styles like this:
+```javascript
+const List = styled.ul`
+    &&&&& {
+        //your styles here
+    }
+`;
+```
+
+you'll need more `&` than classes you are trying to override. Really helpful in chopshop, because there are often 4-7 classes for some nodes.
+
+also note.. that in chopshop the stylus stylesheets render AFTER the styled componenent styles, so you will need to override any conflicting styles like this.
+
 ## Deeply Nested Styles
 remember this $*#@?
 
