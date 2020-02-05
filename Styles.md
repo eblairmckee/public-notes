@@ -18,7 +18,9 @@ As we move things to styled components, we will deprecate the use of classes, be
 ## Utilities
 ### Constants & Helpers
 ⬜️ constants (exported `consts`)
+
 ⬜️ helperClasses (partials/exported strings and template strings, but many should be props)
+
 ⬜️ animations (use the `keyframes` utility)
 
 keyframes in styled components:
@@ -44,12 +46,16 @@ const FadeInButton = styled.button`
 
 ### Colors & Themes
 ⬜️ colors
+
 ⬜️ defaultTheme
+
 ⬜️ advantageTheme
+
 ⬜️ bcbsTheme
 
 ## Mixins & Grid
 ⬜️ grid (functions, similar to mixins)
+
 ⬜️ mixins (`em()` to `px`)
 
 import these as needed
