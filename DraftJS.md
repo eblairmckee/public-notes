@@ -8,11 +8,11 @@
   - [The Facts](#the-facts)
   - [Usecases](#usecases)
 - [How It Works](#how-it-works)
-  - [contentEditable](#contenteditable)
+  - [contenteditable](#contenteditable)
     - [Pros](#pros)
     - [Cons](#cons)
+- [The DraftJS Difference](#the-draftjs-difference)
 - [Demo Time](#demo-time)
-  - [Controlled Inputs](#controlled-inputs)
   - [EditorState](#editorstate)
   - [Helpful Methods](#helpful-methods)
 - [Rich Text Styles](#rich-text-styles)
@@ -42,7 +42,7 @@ DraftJS is a rich text editor for React; built and supported by Facebook. It has
 
 not a `<textarea>` or a `<div>`, instead, they take advantage of the native `contentEditable` HTMLElement property
 
-## contentEditable
+## contenteditable
 
 It's an attribute that can be applied to a `div` to make the inner content editable, stylable, and enables rich text functionality.
 
@@ -61,33 +61,48 @@ inner content will initially be a string, but when rich styles are applied it wi
 - support internationalization
 - accessibility friendly
 - cross browser support
-  - it's been around for over a decade so lots of support
-  - although each browser implements it differently
-    - ie: paragraphs (hitting enter) can become `<p>` or `<div>` or `<br>` depending on the browser
+- it's been around for over a decade so lots of support
 
 ### Cons
 
-it's renouned to be a pain in the ass
+- it's renouned to be a PITA
+- each browser implements styles differently
+  - ie: paragraphs (hitting enter) can become `<p>` or `<div>` or `<br>` depending on the browser
+
+# The DraftJS Difference
+
+DraftJS solves this by using controlled inputs, preventing default browser behaviors, and replaces them with their own that are uniform cross-browsers. They also expose these methods so you can customize them to your liking.
+
+The only problem with this, is that DOM API's are no longer useable. You have to rely solely on the DraftJS API to do really anything:
+
+- selection
+- parse and transform the editor state
+- detect inline and block styles
+- ... really anything
+
+So, to save you an afternoon of wasted debugging... I put together a sort of cheat sheet of DraftJS methods and best practices. (more on that later)
 
 # Demo Time
+
+[demo](https://codesandbox.io/s/contenteditable-b0sqv?file=/src/App.tsx:400-434)
 
 Really easy to setup. Import the `Editor` component from `draft-js` as well as the `EditorState`. Initialize your state with `EditorState.createEmpty()` and return your editor like so:
 
 ```javascript
+import React, { useState } from "react";
 import { Editor, EditorState } from "draft-js";
 
 const MyEditor = () => {
+  const [editorState, setEditorState] =
+    useState < EditorState > EditorState.createEmpty();
   return (
     <Editor
+      editorState={editorState}
       onChange={(editorState: EditorState) => setEditorState(editorState)}
     />
   );
 };
 ```
-
-## Controlled Inputs
-
-DraftJS uses controlled inputs to prevent default behaviors to avoid browser-specific complications (like returning different HTML elements based on rich text styles).
 
 ## EditorState
 
@@ -186,9 +201,6 @@ const getBlockType = editorState
   .getBlockForKey(selection.getStartKey())
   .getType();
 ```
-
-DEMO TIME!!!!!!
-[demo](https://codesandbox.io/s/contenteditable-b0sqv?file=/src/App.tsx:400-434)
 
 # Rich Text Styles
 
