@@ -65,7 +65,11 @@ inner content will initially be a string, but when rich styles are applied it wi
 
 ### Cons
 
-- it's renouned to be a PITA
+- it's renouned to be ["terrible"](https://medium.engineering/why-contenteditable-is-terrible-122d8a40e480)
+- by default it structures HTML in a tree structure rather than blocks
+  - can insert arbitrary HTML tags (like `spans`) when they aren't needed
+    - giving the illusion of visually similar content, but under the hood is has completely different markup
+  - nested HTML tags are a nightmare to debug
 - each browser implements styles differently
   - ie: paragraphs (hitting enter) can become `<p>` or `<div>` or `<br>` depending on the browser
 
@@ -81,6 +85,8 @@ The only problem with this, is that DOM API's are no longer useable. You have to
 - ... really anything
 
 So, to save you an afternoon of wasted debugging... I put together a sort of cheat sheet of DraftJS methods and best practices. (more on that later)
+
+DraftJS uses a different model for mapping styles to DOM nodes. Instead of a tree-like structure (contenteditable on it's own) it uses a block approach where text is stored in strings and the associated styles are stored in a separate object with ranges for where they are applied.
 
 # Demo Time
 
