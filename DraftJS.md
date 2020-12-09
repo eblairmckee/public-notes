@@ -19,6 +19,7 @@
 - [What are Entities?](#what-are-entities)
   - [plugins](#plugins)
 - [how to store data](#how-to-store-data)
+- [Links](#links)
 
 # Intro to DraftJS
 
@@ -278,3 +279,13 @@ export const getStateFromRawJSONOrString = (toBeConverted: RawDraftContentState 
 ```
 
 libraries for converting to markdown
+
+# Links
+
+- [demo](https://codesandbox.io/s/draftjsdemo-forked-4n04p?file=/src/App.tsx)
+- [DraftJS ecosystem](https://project-awesome.org/nikgraf/awesome-draft-js)
+- [docs](https://draftjs.org)
+- [plugins](https://github.com/draft-js-plugins/draft-js-plugins) and [docs](https://www.draft-js-plugins.com/)
+- [medium article](https://medium.engineering/why-contenteditable-is-terrible-122d8a40e480) on why contenteditable is terrible
+- [demo](https://www.youtube.com/channel/UCP_lo1MFyx5IXDeD9s_6nUw) at ReactConf
+- DraftJS [architecture](https://www.youtube.com/watch?v=gxNuHZXZMgs)
