@@ -199,7 +199,7 @@ Here's how I structure my redux apps:
 
 # redux dev tools
 
-time travel
+> time travel demo
 
 # testing
 
@@ -253,8 +253,7 @@ const { getByText } = setupWrapperComponent();
 
 ### reducers
 
-test directly
-Test reducers by passing in the store as first arg, action and payload as second.
+Test reducers _directly_ by passing in the store as first arg, action and payload as second.
 
 ```javascript
 import { reducer as treatsReducer, addTreat } from "./";
@@ -319,7 +318,7 @@ export const fetchCarePathListings = createAsyncThunk(
 );
 ```
 
-which is really a dispatch of sorts. you'll need to set up a subscribing reducer as an `extraReducer` like this:
+which is really a `dispatch` of sorts. you'll need to set up a subscribing `reducer` as an `extraReducer` like this:
 
 ```javascript
 extraReducers: {
@@ -377,6 +376,6 @@ If you're using forms in a Redux app, set state locally using hooks or the OG `s
 
 # demo time
 
-> all state management techniques in one component (add/edit care path form)
-> how to create a new stateful component
-> how to test
+- all state management techniques in one component (add/edit care path form)
+- how to create a new stateful component
+- how to test
