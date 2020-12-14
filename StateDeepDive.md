@@ -2,23 +2,23 @@
 
 ## buzz words
 
-- store: where all your state is _stored_
-- dispatch: how you tell the store to update state
-- actions and action creators: the actual functions that will deliver a payload to the store, or change state
-- reducers: combine previous state with the new, modified state
+- `store`: where all your state is _stored_
+- `dispatch`: how you tell the `store` to update state
+- `actions` and action creators: the actual functions that will deliver a payload to the `store`, or change state
+- `reducers`: combine previous state with the new, modified state
 
 ## how it works under the hood
 
 Here's a typical redux configuration flow. Keep in mind, this is HIGHLY simplified and only to give you a gist of what is going on under the hood:
 
 1. create your `store`
-2. subscribe component to the `store` `store.subscribe()`
-3. or you can access state any where with `store.getState()`, but know that if you use this method, the component WILL NOT update if the store does.
+2. subscribe `<Component/>` to the `store` eg: `store.subscribe()`
+3. or you can access state any where with `store.getState()`, but know that if you use this method, the component WILL NOT update if the `store` does.
 4. dispatch objects to actions `store.dispatch()`
    actions exist outside of components, and can be reused, [separation of concerns](https://medium.com/@dan_abramov/smart-and-dumb-components-7ca2f9a7c7d0) (presentation vs stateful UI)
-5. actions will pass the payload to the reducer
+5. `action`s will pass the payload to the `reducer`
 6. which then returns a new, immutable state object
-7. anything subscribed to the store will rehydrate and rerender with new state
+7. anything subscribed to the `store` will rehydrate and rerender with new state
 
 # our state tree
 
@@ -33,10 +33,10 @@ Here's a typical redux configuration flow. Keep in mind, this is HIGHLY simplifi
 we use [Redux Toolkit](https://redux-toolkit.js.org/)
 
 - framework agnostic
-- preconfigured store
-- reselect is baked in
+- preconfigured `store`
+- `reselect` is baked in
 
-Instead of reducers and actions, you use `createSlice` which does all the heavy lifting for you. Here's an [example](https://codesandbox.io/s/rtk-convert-todos-example-uqqy3?from-embed=&file=/src/index.js).
+Instead of `reducers` and `actions`, you use `createSlice` which does all the heavy lifting for you. Here's an [example](https://codesandbox.io/s/rtk-convert-todos-example-uqqy3?from-embed=&file=/src/index.js).
 
 ## createStore
 
@@ -46,7 +46,7 @@ Store is preconfigured with:
 - middleware
   - allows for thunks (async store updates)
 
-Includes a utility called 'combineReducers' that combines your reducers into a single reducer that's passed into the store. In this example, say we're building an app for a dog store that stocks treats and toys. We want to be able to manage these items in our store using their own reducers.
+Includes a utility called 'combineReducers' that combines your reducers into a single reducer that's passed into the `store`. In this example, say we're building an app for a dog store that stocks treats and toys. We want to be able to manage these items in our `store` using their own reducers.
 
 ```javascript
 import { configureStore } from "@reduxjs/toolkit";
@@ -68,7 +68,7 @@ const store = configureStore({
 export default store;
 ```
 
-You'll then need to inject your store into your application at the highest level (usually an `<App/>` component)
+You'll then need to inject your `store` into your application at the highest level (usually an `<App/>` component)
 
 React ships with a higher order component (HOC) called a `<Provider>` that wraps your application and injects state using the [Context API](https://reactjs.org/docs/context.html).
 
@@ -86,7 +86,7 @@ React ships with a higher order component (HOC) called a `<Provider>` that wraps
 
 ## createSlice
 
-This is your reducer, actions, and action creators all in one function.
+This is your `reducer`, `actions`, and action creators all in one function.
 
 ```javascript
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
@@ -106,19 +106,19 @@ export const { reducer, actions } = treatsSlice;
 export const { addTreat, takeTreat } = actions;
 ```
 
-Destructure your reducer and actions... then import your reducer into the root reducer so your store is aware of it.
+Destructure your `reducer` and `actions`... then import your `reducer` into the `rootReducer` so your `store` is aware of it.
 
 ## expose to your store
 
-Use the `combineReducers()` utility which will create a single reducer that you can pass to your store. This will generate your state tree and expose your application to redux state and manipulation methods. You'll still be able to manipulate individual parts of state (specific to each reducer) but only have to inject it once into the app.
+Use the `combineReducers()` utility which will create a single `reducer` that you can pass to your `store`. This will generate your state tree and expose your application to redux state and manipulation methods. You'll still be able to manipulate individual parts of state (specific to each `reducer`) but only have to inject it once into the app.
 
 # how to make your app stateful
 
 ## connect individual components
 
-Use the `react-redux` library to subscribe components to the store. First, you'll need to wrap your app with a higher order `<Provider>` component that uses the `Context` API to inject the store into the app (sounds familiar, right?). This exposes your store to all consuming components.
+Use the `react-redux` library to subscribe components to the `store`. First, you'll need to wrap your app with a higher order `<Provider>` component that uses the `Context` API to inject the `store` into the app (sounds familiar, right?). This exposes your `store` to all consuming components.
 
-How do you make a component a consumer? React-redux ships with a `connect` call that will subscribe the component to the store. You can them map state as props and pass them into the component. Same for dispatch actions.
+How do you make a component a consumer? React-redux ships with a `connect` call that will subscribe the component to the `store`. You can then map state as `props` and pass them into the component. Same for dispatch `actions`.
 
 `connect` takes two arguments:
 
@@ -166,6 +166,14 @@ const mapDispatchToProps = {
 export default connect(mapStateToProps, mapDispatchToProps)(MyComponent);
 ```
 
+# selectors
+
+`selectors` allow you to transform state before passing it into a component.
+
+> Filter example
+
+Only parent is stateful, pass in transformed state using selectors to improve performance, and then pass transformed state to a stateless child which renders the data.
+
 # best practices
 
 ## subscription vs store.getState()
@@ -205,7 +213,7 @@ Here's how I structure my redux apps:
 
 Always make sure you write tests that expect an intended behavior, rather than testing the store directly.
 
-test at the highest level. that means if you have a bunch of presentational components that receive state as props, you need to test their behavior at the parent level (the subscribed component).
+test at the highest level. that means if you have a bunch of presentational components that receive state as `props`, you need to test their behavior at the parent level (the subscribed component).
 
 > Table and filter example
 
@@ -253,7 +261,7 @@ const { getByText } = setupWrapperComponent();
 
 ### reducers
 
-Test reducers _directly_ by passing in the store as first arg, action and payload as second.
+Test reducers _directly_ by passing in the `store` as first arg, `action` and `payload` as second.
 
 ```javascript
 import { reducer as treatsReducer, addTreat } from "./";
